@@ -7,6 +7,14 @@ use regex::Regex;
 fn main() {
     println!("{}", "🔍 Searching for branches tagged as [gone]...".cyan());
 
+    match refresh_branches() {
+        Ok(_) => println!("{}", "🔄️ Branches refreshed successfully.".green()),
+        Err(e) => {
+            eprintln!("{}", format!("❌ Failed to refresh branches: {}", e).red());
+            return;
+        }
+    }
+
     let current_branch = match get_current_branch() {
         Ok(b) => b,
         Err(e) => {
@@ -28,6 +36,10 @@ fn main() {
 
     println!("{}", format!("🔍 Found {} branches tagged as [gone]", gone_branches.len()).cyan());
 
+    if gone_branches.is_empty() {
+        return;
+    }
+
     if !ask_confirmation() {
         println!("{}", "❌ Operation cancelled by user.".red());
         return;
@@ -42,6 +54,11 @@ fn main() {
 
 fn get_current_branch() -> Result<String, String> {
     let out = run_git(&["symbolic-ref", "--short", "HEAD"])?;
+    Ok(out.trim().to_string())
+}
+
+fn refresh_branches() -> Result<String, String> {
+    let out = run_git(&["fetch", "--prune"])?;
     Ok(out.trim().to_string())
 }
 
