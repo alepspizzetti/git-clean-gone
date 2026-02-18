@@ -1,0 +1,110 @@
+name: release
+
+permissions:
+  contents: write
+
+on:
+  pull_request:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+    tags:
+      - v*
+
+jobs:
+  plan:
+    name: Plan
+    runs-on: ubuntu-22.04
+    outputs:
+      val: ${{ steps.plan.outputs.val }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.30.2/cargo-dist-installer.sh | sh
+      - id: plan
+        name: Run dist plan
+        run: dist plan --output-format=json --tag=${{ github.ref_name }} > dist-manifest.json
+      - id: upload
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-plan
+          path: dist-manifest.json
+      - run: |
+          echo 'val<<EOF' >> $GITHUB_OUTPUT
+          cat dist-manifest.json >> $GITHUB_OUTPUT
+          echo EOF >> $GITHUB_OUTPUT
+
+  build-local-artifacts:
+    name: Build local artifacts
+    needs: plan
+    if: ${{ github.event_name != 'pull_request' }}
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.plan.outputs.val).ci.github.artifacts_matrix }}
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.30.2/cargo-dist-installer.sh | sh
+      - name: Build artifacts
+        run: |
+          dist build --output-format=json --tag=${{ github.ref_name }} -p=local > dist-manifest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-${{ join(matrix.targets, '-') }}
+          path: |
+            dist/*
+            !dist/*.json
+
+  build-global-artifacts:
+    name: Build global artifacts
+    needs: plan
+    if: ${{ github.event_name != 'pull_request' }}
+    runs-on: ubuntu-22.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.30.2/cargo-dist-installer.sh | sh
+      - name: Build artifacts
+        run: |
+          dist build --output-format=json --tag=${{ github.ref_name }} -p=global > dist-manifest.json
+      - uses: actions/upload-artifact@v4
+        with:
+          name: artifacts-global
+          path: |
+            dist/*
+            !dist/*.json
+
+  host:
+    name: Host
+    runs-on: ubuntu-22.04
+    needs:
+      - plan
+      - build-local-artifacts
+      - build-global-artifacts
+    if: ${{ github.event_name != 'pull_request' }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: artifacts
+          pattern: artifacts-*
+          merge-multiple: true
+      - name: Download plan
+        uses: actions/download-artifact@v4
+        with:
+          path: .
+          name: artifacts-plan
+      - name: Install cargo-dist
+        run: |
+          curl --proto '=https' --tlsv1.2 -LsSf https://github.com/axodotdev/cargo-dist/releases/download/v0.30.2/cargo-dist-installer.sh | sh
+      - name: Host artifacts
+        run: |
+          mkdir -p dist
+          cp artifacts/* dist/
+          dist host --output-format=json --tag=${{ github.ref_name }} --steps=create --steps=upload --steps=release > dist-manifest.json

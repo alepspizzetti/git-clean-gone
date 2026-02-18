@@ -1,36 +1,33 @@
 # git-clean-gone
 
-> **Disclaimer:** This tool was created as part of my Rust learning journey.  
-> While it aims to be useful, the main purpose of this project is experimentation and skill development.
+A Rust CLI to remove local Git branches marked as `[gone]`.
 
+## Features
 
-A simple CLI tool written in **Rust** to remove local Git branches that are marked as **[gone]**.  
-It integrates directly with Git as a native subcommand:
+- Detects branches with `[gone]`
+- Skips the current branch
+- Asks confirmation before deleting
+- Prints a summary of deleted, skipped, and failed branches
 
----
+## Installation
 
-## ✨ Features
+### Windows
+Download the installer from the GitHub Releases page.
 
-- Automatically detects branches with `[gone]`
-- Skips the current branch for safety
-- Prompts for confirmation before deleting
-- Shows a clean operation summary:
-  - deleted branches  
-  - skipped branches  
-  - failed deletions  
+### macOS / Linux
+Install with Homebrew after the tap is published:
 
----
+```bash
+brew install eldertorres/tap/git-clean-gone
+```
 
-## 📦 Installation
+### Rust users
 
-### **Windows**
-Download the installer from the **Releases** page.
+```bash
+cargo install git-clean-gone
+```
 
-The installer:
-- creates a local program directory  
-- adds it to your **PATH** automatically  
-- lets you run:
+## Release process
 
-```powershell
-git clean-gone
+This repo includes a multi-platform release workflow in `.github/workflows/release.yml`.
 
