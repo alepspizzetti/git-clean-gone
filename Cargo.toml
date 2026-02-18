@@ -2,6 +2,8 @@
 name = "git-clean-gone"
 version = "0.1.1"
 edition = "2024"
+description = "A CLI tool to clean up local git branches whose remote tracking branch is gone"
+homepage = "https://github.com/eldertorres/git-clean-gone"
 repository = "https://github.com/eldertorres/git-clean-gone"
 
 [dependencies]
