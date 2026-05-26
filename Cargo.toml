@@ -18,7 +18,7 @@ lto = "thin"
 [workspace.metadata.dist]
 cargo-dist-version = "0.30.2"
 ci = "github"
-installers = ["shell", "powershell", "homebrew"]
+installers = ["shell", "powershell"]
 targets = [
     "aarch64-apple-darwin",
     "x86_64-apple-darwin",
