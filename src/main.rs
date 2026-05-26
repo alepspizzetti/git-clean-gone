@@ -1,8 +1,7 @@
-use std::process::Command;
-use std::io::{self, Write};
 use colored::*;
 use regex::Regex;
-
+use std::io::{self, Write};
+use std::process::Command;
 
 fn main() {
     println!("{}", "🔍 Searching for branches tagged as [gone]...".cyan());
@@ -18,13 +17,18 @@ fn main() {
     let current_branch = match get_current_branch() {
         Ok(b) => b,
         Err(e) => {
-            eprintln!("{}", format!("❌ Failed do get current branch: {}", e).red());
+            eprintln!(
+                "{}",
+                format!("❌ Failed do get current branch: {}", e).red()
+            );
             return;
         }
     };
 
-    println!("{}", format!("📍 Current branch: {} will not be deleted", current_branch).yellow());
-
+    println!(
+        "{}",
+        format!("📍 Current branch: {} will not be deleted", current_branch).yellow()
+    );
 
     let gone_branches = match get_gone_branches() {
         Ok(b) => b,
@@ -34,7 +38,10 @@ fn main() {
         }
     };
 
-    println!("{}", format!("🔍 Found {} branches tagged as [gone]", gone_branches.len()).cyan());
+    println!(
+        "{}",
+        format!("🔍 Found {} branches tagged as [gone]", gone_branches.len()).cyan()
+    );
 
     if gone_branches.is_empty() {
         return;
@@ -69,13 +76,12 @@ fn run_git(args: &[&str]) -> Result<String, String> {
         .map_err(|e| format!("Failed to exec command: git {:?}: {}", args, e))?;
 
     if !output.status.success() {
-        return Err(format!("get {:?} returned code {}", args, output.status))
+        return Err(format!("get {:?} returned code {}", args, output.status));
     }
 
     let stdout = String::from_utf8_lossy(&output.stdout).to_string();
     Ok(stdout)
 }
-
 
 fn get_gone_branches() -> Result<Vec<String>, String> {
     let output = run_git(&["branch", "-v"])?;
@@ -84,7 +90,7 @@ fn get_gone_branches() -> Result<Vec<String>, String> {
     let mut gone = Vec::new();
 
     for line in output.lines() {
-        if !line.contains("[gone]"){
+        if !line.contains("[gone]") {
             continue;
         }
 
@@ -131,14 +137,15 @@ fn delete_branches(gone: Vec<String>, current: &str) -> Summary {
 
     for branch in gone {
         if branch == current {
-            println!("{}", format!("⚠️ Skipping current branch: {}", branch).yellow());
+            println!(
+                "{}",
+                format!("⚠️ Skipping current branch: {}", branch).yellow()
+            );
             summary.skipped.push(branch);
             continue;
         }
 
-        let output = Command::new("git")
-            .args(["branch", "-D", &branch])
-            .output();
+        let output = Command::new("git").args(["branch", "-D", &branch]).output();
 
         match output {
             Ok(out) => {
@@ -147,12 +154,18 @@ fn delete_branches(gone: Vec<String>, current: &str) -> Summary {
                     summary.deleted.push(branch);
                 } else {
                     let stderr = String::from_utf8_lossy(&out.stderr);
-                    println!("{}", format!("❌ Failed to delete branch {}: {}", branch, stderr.trim()).red());
+                    println!(
+                        "{}",
+                        format!("❌ Failed to delete branch {}: {}", branch, stderr.trim()).red()
+                    );
                     summary.failed.push(branch);
                 }
             }
             Err(e) => {
-                println!("{}", format!("❌ Failed to delete branch {}: {}", branch, e).red());
+                println!(
+                    "{}",
+                    format!("❌ Failed to delete branch {}: {}", branch, e).red()
+                );
                 summary.failed.push(branch);
             }
         }
@@ -163,10 +176,22 @@ fn delete_branches(gone: Vec<String>, current: &str) -> Summary {
 fn print_summary(summary: &Summary) {
     println!();
     println!("{}", "📊 Operation details:".cyan());
-    println!("{} {}", "+ Count of branches [gone]:".white(), summary.total);
-    println!("{} {}", "+ Count of deleted branches:".green(), summary.deleted.len());
-    println!("{} {}", "+ Skipped branches:".yellow(),summary.skipped.len());
-    println!("{} {}", "+ Failed to delete:".red(),summary.failed.len());
+    println!(
+        "{} {}",
+        "+ Count of branches [gone]:".white(),
+        summary.total
+    );
+    println!(
+        "{} {}",
+        "+ Count of deleted branches:".green(),
+        summary.deleted.len()
+    );
+    println!(
+        "{} {}",
+        "+ Skipped branches:".yellow(),
+        summary.skipped.len()
+    );
+    println!("{} {}", "+ Failed to delete:".red(), summary.failed.len());
 
     if !summary.deleted.is_empty() {
         println!();
