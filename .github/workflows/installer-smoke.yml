@@ -1,0 +1,43 @@
+name: Installer smoke tests
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+jobs:
+  unix-installer:
+    name: Unix installer (${{ matrix.os }})
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-22.04
+          - macos-14
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from latest release asset
+        run: |
+          set -eux
+          export GIT_CLEAN_GONE_INSTALL_DIR="$RUNNER_TEMP/git-clean-gone-bin"
+          sh scripts/install-unix.sh
+          test -x "$GIT_CLEAN_GONE_INSTALL_DIR/git-clean-gone"
+          "$GIT_CLEAN_GONE_INSTALL_DIR/git-clean-gone" < /dev/null
+
+  windows-installer:
+    name: Windows installer
+    runs-on: windows-2022
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install from latest release asset
+        shell: pwsh
+        run: |
+          $ErrorActionPreference = 'Stop'
+          $env:GIT_CLEAN_GONE_INSTALL_DIR = Join-Path $env:RUNNER_TEMP 'git-clean-gone-bin'
+          ./scripts/install-windows.ps1
+          $exe = Join-Path $env:GIT_CLEAN_GONE_INSTALL_DIR 'git-clean-gone.exe'
+          if (-not (Test-Path $exe)) { throw "Missing installed executable: $exe" }
+          & $exe < $null
