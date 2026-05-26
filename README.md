@@ -104,14 +104,14 @@ irm https://raw.githubusercontent.com/eldertorres/git-clean-gone/master/scripts/
 Unix/macOS:
 
 ```bash
-GIT_CLEAN_GONE_VERSION=v0.1.1 \
+GIT_CLEAN_GONE_VERSION=v0.1.2 \
   sh -c "$(curl -fsSL https://raw.githubusercontent.com/eldertorres/git-clean-gone/master/scripts/install-unix.sh)"
 ```
 
 Windows PowerShell:
 
 ```powershell
-$env:GIT_CLEAN_GONE_VERSION = "v0.1.1"
+$env:GIT_CLEAN_GONE_VERSION = "v0.1.2"
 irm https://raw.githubusercontent.com/eldertorres/git-clean-gone/master/scripts/install-windows.ps1 | iex
 ```
 

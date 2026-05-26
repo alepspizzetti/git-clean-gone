@@ -1,6 +1,6 @@
 # Maintainer: Elder Torres
 pkgname=git-clean-gone
-pkgver=0.1.1
+pkgver=0.1.2
 pkgrel=1
 pkgdesc="Clean local Git branches whose remote tracking branch is gone"
 arch=('x86_64')
@@ -9,7 +9,7 @@ license=('MIT')
 depends=('git')
 makedepends=('cargo')
 source=("$pkgname-$pkgver.tar.gz::$url/archive/refs/tags/v$pkgver.tar.gz")
-sha256sums=('672ff925fe0bbd3c01a2e75009685362b2399125b0e83037b81adce8a3a82b9d')
+sha256sums=('SKIP')
 
 build() {
   cd "$pkgname-$pkgver"
