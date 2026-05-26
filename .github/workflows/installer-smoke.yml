@@ -40,4 +40,4 @@ jobs:
           ./scripts/install-windows.ps1
           $exe = Join-Path $env:GIT_CLEAN_GONE_INSTALL_DIR 'git-clean-gone.exe'
           if (-not (Test-Path $exe)) { throw "Missing installed executable: $exe" }
-          & $exe < $null
+          & $exe
